@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            background-color: inherit;
+            border: none;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 300px;
+            min-width: 120px;
+            margin: 10px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: lighter;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/device?active=online" class="card">
+            <div class="title">当前在线设备</div>
+            <div class="value">{{.online}}</div>
+        </a>
+        <a href="/device?active=daily" class="card">
+            <div class="title">每日活跃设备</div>
+            <div class="value">{{.daily}}</div>
+        </a>
+        <a href="/device?active=weekly" class="card">
+            <div class="title">每周活跃设备</div>
+            <div class="value">{{.weekly}}</div>
+        </a>
+        <a href="/domain" class="card">
+            <div class="title">网络</div>
+            <div class="value">{{.domain}}</div>
+        </a>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        button {
+            margin: 0 auto;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .button-wrapper {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>网络</th>
+                <th>地址</th>
+                <th>国家</th>
+                <th>地区</th>
+                <th>RX</th>
+                <th>TX</th>
+                <th>状态</th>
+                <th>状态更新时间</th>
+                <th>操作系统</th>
+                <th>版本号</th>
+                <th>主机名</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .devices}}
+            <tr>
+                <td>{{ .Domain }}</td>
+                <td>{{ .IP }}</td>
+                <td>{{ .Country }}</td>
+                <td>{{ .Region }}</td>
+                <td>{{call $.formatRxTx .RX}}</td>
+                <td>{{call $.formatRxTx .TX}}</td>
+                <td>{{ if .Online }}在线{{ else }}离线{{ end }}</td>
+                <td>{{ .ConnUpdatedAt.Format "2006-01-02 15:04:05" }}</td>
+                <td>{{ .OS }}</td>
+                <td>{{ .Version }}</td>
+                <td>{{ .HostName }}</td>
+                <td><button onclick="location.href='/device/delete?domain={{.Domain}}&vmac={{.VMac}}'">删除</button></td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    <div class="button-wrapper">
+        <button onclick="location.href='/'">返回主页</button>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        button {
+            margin: 0 auto;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .button-wrapper {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>网络</th>
+                <th>口令</th>
+                <th>广播</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .domains}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.DHCP}}</td>
+                <td>{{.Password}}</td>
+                <td>{{if .Broadcast}}允许{{else}}禁止{{end}}</td>
+                <td><button onclick="location.href='/domain/delete?name={{.Name}}'">删除</button></td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    <div class="button-wrapper">
+        <button onclick="location.href='/domain/insert'">添加网络</button>
+        <button onclick="location.href='/'">返回主页</button>
+    </div>
+</body>
+
+</html>
