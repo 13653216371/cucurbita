@@ -19,6 +19,9 @@ func main() {
 	r.GET("/", web.Index)
 	r.GET("/favicon.ico", web.Favicon)
 
+	r.GET("/register", web.RegisterPage)
+	r.POST("/register", web.UserRegister)
+
 	r.GET("/login", web.LoginPage)
 	r.POST("/login", web.Login)
 

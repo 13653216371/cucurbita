@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录</title>
+    <title>注册</title>
     <style>
         body {
             font-family: sans-serif;
@@ -49,13 +49,14 @@
 <body>
     <div class="container">
         <div class="box">
-            <form action="/login" method="post">
+            <form action="/register" method="post">
                 <div>
                     <input type="text" id="username" name="username" placeholder="用户名" required>
                     <input type="password" id="password" name="password" placeholder="密码" required>
+                    <input type="text" id="invitation" name="invitation" placeholder="邀请码" required>
                 </div>
                 <div>
-                    <input type="submit" value="登录">
+                    <input type="submit" value="注册">
                 </div>
             </form>
         </div>
