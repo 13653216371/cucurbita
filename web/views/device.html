@@ -62,17 +62,17 @@
         <tbody>
             {{range .devices}}
             <tr>
-                <td>{{ .Domain }}</td>
-                <td>{{ .IP }}</td>
-                <td>{{ .Country }}</td>
-                <td>{{ .Region }}</td>
+                <td>{{.Domain}}</td>
+                <td>{{.IP}}</td>
+                <td>{{.Country}}</td>
+                <td>{{.Region}}</td>
                 <td>{{call $.formatRxTx .RX}}</td>
                 <td>{{call $.formatRxTx .TX}}</td>
-                <td>{{ if .Online }}在线{{ else }}离线{{ end }}</td>
-                <td>{{ .ConnUpdatedAt.Format "2006-01-02 15:04:05" }}</td>
-                <td>{{ .OS }}</td>
-                <td>{{ .Version }}</td>
-                <td>{{ .Hostname }}</td>
+                <td>{{if .Online}}在线{{else}}离线{{end}}</td>
+                <td>{{.ConnUpdatedAt.Format "2006-01-02 15:04:05"}}</td>
+                <td>{{.OS}}</td>
+                <td>{{.Version}}</td>
+                <td>{{.Hostname}}</td>
                 <td><button onclick="location.href='/device/delete?domain={{.Domain}}&vmac={{.VMac}}'">删除</button></td>
             </tr>
             {{end}}

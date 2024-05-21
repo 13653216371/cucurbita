@@ -1,7 +1,10 @@
 package web
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
+	"math/rand"
 	"net/http"
 	"strings"
 
@@ -17,7 +20,8 @@ type User struct {
 	Password   string
 	Token      string
 	Role       string
-	Invitation string
+	Invitation uint32
+	Inviter    string
 }
 
 func init() {
@@ -27,36 +31,8 @@ func init() {
 	}
 }
 
-func UserPage(c *gin.Context) {
-	var users []User
-	currentUser := c.MustGet("user").(*User)
-
-	if currentUser.Role == "admin" {
-		storage.Model(&User{}).Find(&users)
-
-	}
-
-	c.HTML(http.StatusOK, "user.html", goview.M{
-		"users": users,
-	})
-}
-
-func isValidInvitation(invitation string) bool {
-	bytes, err := base64.RawStdEncoding.DecodeString(invitation)
-	if err != nil {
-		return false
-	}
-	info := strings.Split(string(bytes), "::")
-	if len(info) != 2 {
-		return false
-	}
-	if info[1] == "" {
-		return false
-	}
-
-	count := int64(0)
-	storage.Model(&User{}).Where("name = ? and invitation = ?", info[0], info[1]).Count(&count)
-	return count == 1
+func RegisterPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "register.html", nil)
 }
 
 func UserRegister(c *gin.Context) {
@@ -72,15 +48,12 @@ func UserRegister(c *gin.Context) {
 		currentUser.Password = password
 		currentUser.Token = uuid.New().String()
 		currentUser.Role = "admin"
+		currentUser.Invitation = rand.Uint32()
+		currentUser.Inviter = "-"
 		storage.Create(currentUser)
 		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
 		c.Redirect(http.StatusSeeOther, "/")
-		return
-	}
-
-	if !isValidInvitation(invitation) {
-		c.Redirect(http.StatusSeeOther, "/register")
 		return
 	}
 
@@ -90,14 +63,131 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
+	inviter, ok := isValidInvitation(invitation)
+	if !ok {
+		c.Redirect(http.StatusSeeOther, "/register")
+		return
+	}
+
 	currentUser.Name = username
 	currentUser.Password = password
 	currentUser.Token = uuid.New().String()
 	currentUser.Role = "normal"
+	currentUser.Invitation = rand.Uint32()
+	currentUser.Inviter = inviter
 	storage.Create(currentUser)
 	c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 	c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
 	c.Redirect(http.StatusSeeOther, "/")
+}
+
+func isValidInvitation(invitation string) (inviter string, ok bool) {
+	bytes, err := base64.RawStdEncoding.DecodeString(invitation)
+	if err != nil {
+		return
+	}
+	info := strings.Split(string(bytes), "::")
+	if len(info) != 2 {
+		return
+	}
+	if info[1] == "" {
+		return
+	}
+
+	user := &User{}
+	result := storage.Model(&User{}).Where("name = ? and invitation = ?", info[0], info[1]).Take(&user)
+	if result.Error != nil {
+		return
+	}
+
+	inviter = info[0]
+	ok = true
+
+	user.Invitation = rand.Uint32()
+	storage.Save(user)
+	return
+}
+
+func LoginMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		route := c.Request.URL.String()
+		if route == "/login" || route == "/register" || route == "/favicon.ico" {
+			c.Next()
+			return
+		}
+
+		username, usernameErr := c.Cookie("username")
+		token, tokenErr := c.Cookie("token")
+		if usernameErr != nil || tokenErr != nil {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		user := &User{Name: username}
+		result := storage.Where(user).Take(user)
+		if result.Error != nil || user.Token != token {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+		c.Set("user", user)
+		c.Next()
+	}
+}
+
+func LoginPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", nil)
+}
+
+func Login(c *gin.Context) {
+	username := c.PostForm("username")
+	password := sha256base64(c.PostForm("password"))
+	if username == "" {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	currentUser := &User{}
+	result := storage.Model(&User{}).Where("name = ?", username).Take(&currentUser)
+	if result.Error != nil {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	if currentUser.Password != password {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	currentUser.Token = uuid.New().String()
+	storage.Save(currentUser)
+	c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
+	c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
+	c.Redirect(http.StatusSeeOther, "/")
+}
+
+func sha256base64(input string) string {
+	hash := sha256.Sum256([]byte(input))
+	return base64.StdEncoding.EncodeToString(hash[:])
+}
+
+func UserPage(c *gin.Context) {
+	var users []User
+	currentUser := c.MustGet("user").(*User)
+
+	if currentUser.Role == "admin" {
+		storage.Model(&User{}).Find(&users)
+	} else {
+		storage.Model(&User{}).Where("name = ?", currentUser.Name).Find(&users)
+	}
+
+	c.HTML(http.StatusOK, "user.html", goview.M{
+		"users": users,
+		"encodeInvitation": func(name string, invitation uint64) string {
+			return base64.RawStdEncoding.EncodeToString([]byte(fmt.Sprintf("%s::%d", name, invitation)))
+		},
+	})
 }
 
 func DeleteUser(c *gin.Context) {

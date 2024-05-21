@@ -47,18 +47,18 @@
             <tr>
                 <th>用户名</th>
                 <th>角色</th>
-                <th>注册时间</th>
-                <th>更新时间</th>
+                <th>邀请码</th>
+                <th>邀请者</th>
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
             {{range .users}}
             <tr>
-                <td>{{ .Name }}</td>
-                <td>{{ .Role }}</td>
-                <td>{{ .CreatedAt.Format "2006-01-02 15:04:05" }}</td>
-                <td>{{ .UpdatedAt.Format "2006-01-02 15:04:05" }}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Role}}</td>
+                <td>{{call $.encodeInvitation .Name .Invitation}}</td>
+                <td>{{.Inviter}}</td>
                 <td><button onclick="location.href='/user/delete?name={{.Name}}'">删除</button></td>
             </tr>
             {{end}}
