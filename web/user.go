@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/foolin/goview"
 	"github.com/gin-gonic/gin"
@@ -11,10 +12,12 @@ import (
 )
 
 type User struct {
-	Name     string `gorm:"primaryKey"`
-	Password string
-	Token    string
-	Role     string
+	Name      string `gorm:"primaryKey"`
+	Password  string
+	Token     string
+	Role      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func init() {

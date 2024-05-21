@@ -54,7 +54,7 @@ func Login(c *gin.Context) {
 		currentUser.Password = sha256base64(c.PostForm("password"))
 		currentUser.Token = uuid.New().String()
 		currentUser.Role = "admin"
-		storage.Save(currentUser)
+		storage.Create(currentUser)
 		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
 		c.Redirect(http.StatusSeeOther, "/")
@@ -68,7 +68,7 @@ func Login(c *gin.Context) {
 		currentUser.Password = sha256base64(c.PostForm("password"))
 		currentUser.Token = uuid.New().String()
 		currentUser.Role = "normal"
-		storage.Save(currentUser)
+		storage.Create(currentUser)
 		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
 		c.Redirect(http.StatusSeeOther, "/")
