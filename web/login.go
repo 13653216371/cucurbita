@@ -47,11 +47,18 @@ func LoginPage(c *gin.Context) {
 func Login(c *gin.Context) {
 	currentUser := &User{}
 
+	username := c.PostForm("username")
+	password := sha256base64(c.PostForm("password"))
+	if username == "" {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
 	// 第一个注册的用户设置为管理员
 	result := storage.Model(&User{}).Take(&currentUser)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		currentUser.Name = c.PostForm("username")
-		currentUser.Password = sha256base64(c.PostForm("password"))
+		currentUser.Name = username
+		currentUser.Password = password
 		currentUser.Token = uuid.New().String()
 		currentUser.Role = "admin"
 		storage.Create(currentUser)
@@ -62,10 +69,10 @@ func Login(c *gin.Context) {
 	}
 
 	// 后续注册的用户设置为普通用户
-	result = storage.Model(&User{}).Where("name = ?", c.PostForm("username")).Take(&currentUser)
+	result = storage.Model(&User{}).Where("name = ?", username).Take(&currentUser)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		currentUser.Name = c.PostForm("username")
-		currentUser.Password = sha256base64(c.PostForm("password"))
+		currentUser.Name = username
+		currentUser.Password = password
 		currentUser.Token = uuid.New().String()
 		currentUser.Role = "normal"
 		storage.Create(currentUser)
@@ -76,7 +83,7 @@ func Login(c *gin.Context) {
 	}
 
 	// 用户存在且密码匹配,登录成功,并更新 Token
-	if currentUser.Password == sha256base64(c.PostForm("password")) {
+	if currentUser.Password == password {
 		currentUser.Token = uuid.New().String()
 		storage.Save(currentUser)
 		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
