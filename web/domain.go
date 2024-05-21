@@ -11,7 +11,12 @@ import (
 
 func DomainPage(c *gin.Context) {
 	var domains []candy.Domain
-	storage.Find(&domains)
+	currentUser := c.MustGet("user").(*User)
+	if currentUser.Role == "admin" {
+		storage.Model(&candy.Domain{}).Find(&domains)
+	} else {
+		storage.Model(&candy.Domain{}).Where("username = ?", currentUser.Name).Find(&domains)
+	}
 
 	c.HTML(http.StatusOK, "domain.html", goview.M{
 		"domains": domains,
@@ -23,7 +28,13 @@ func InsertDomainPage(c *gin.Context) {
 }
 
 func InsertDomain(c *gin.Context) {
-	result := storage.Create(&candy.Domain{Name: c.PostForm("name"), Password: c.PostForm("password"), DHCP: c.PostForm("dhcp"), Broadcast: c.PostForm("broadcast") == "enable"})
+	currentUser := c.MustGet("user").(*User)
+	result := storage.Create(&candy.Domain{
+		Name:      c.PostForm("name"),
+		Password:  c.PostForm("password"),
+		DHCP:      c.PostForm("dhcp"),
+		Broadcast: c.PostForm("broadcast") == "enable",
+		Username:  currentUser.Name})
 	if result.Error != nil {
 		c.Redirect(http.StatusSeeOther, "/domain/insert")
 	} else {
@@ -32,6 +43,9 @@ func InsertDomain(c *gin.Context) {
 }
 
 func DeleteDomain(c *gin.Context) {
-	candy.DeleteDomain(c.Query("name"))
+	currentUser := c.MustGet("user").(*User)
+	if currentUser.Role == "admin" || candy.GetDomain(c.Query("name")).Username == currentUser.Name {
+		candy.DeleteDomain(c.Query("name"))
+	}
 	c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
 }

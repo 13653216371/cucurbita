@@ -126,7 +126,7 @@ func handlePingMessage(ws *Websocket, domain *Domain, buffer string) error {
 		device.Version = info[2]
 
 		if len(info) > 3 {
-			device.HostName = info[3]
+			device.Hostname = info[3]
 		}
 
 		return nil
@@ -188,6 +188,7 @@ func handleAuthMessage(ws *Websocket, domain *Domain, buffer []byte) error {
 	device.IP = uint32ToIpString(message.IP)
 	device.Online = true
 	device.ConnUpdatedAt = time.Now()
+	device.Username = domain.Username
 	storage.Save(device)
 	return nil
 }

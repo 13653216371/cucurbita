@@ -33,8 +33,13 @@ func AutoMigrate(dst ...interface{}) error {
 	return db.AutoMigrate(dst...)
 }
 
+func Raw(sql string, values ...interface{}) (tx *gorm.DB) {
+	return db.Raw(sql, values)
+}
+
 func Create(value interface{}) (tx *gorm.DB) {
 	return db.Create(value)
+
 }
 
 func Delete(value interface{}, conds ...interface{}) (tx *gorm.DB) {

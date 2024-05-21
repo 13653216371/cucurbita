@@ -22,6 +22,9 @@ func main() {
 	r.GET("/login", web.LoginPage)
 	r.POST("/login", web.Login)
 
+	r.GET("/user", web.UserPage)
+	r.GET("/user/delete", web.DeleteUser)
+
 	r.GET("/domain", web.DomainPage)
 	r.GET("/domain/insert", web.InsertDomainPage)
 	r.POST("/domain/insert", web.InsertDomain)

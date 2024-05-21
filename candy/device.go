@@ -31,7 +31,8 @@ type Device struct {
 	TX            uint64
 	OS            string
 	Version       string
-	HostName      string
+	Hostname      string
+	Username      string
 
 	ip uint32
 }
@@ -41,6 +42,7 @@ type Domain struct {
 	Password  string
 	DHCP      string
 	Broadcast bool
+	Username  string
 
 	mask   uint32
 	netID  uint32

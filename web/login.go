@@ -20,20 +20,22 @@ func LoginMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		token, err := c.Cookie("token")
-		if err != nil {
+		username, usernameErr := c.Cookie("username")
+		token, tokenErr := c.Cookie("token")
+		if usernameErr != nil || tokenErr != nil {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
 			return
 		}
 
-		config := &storage.Config{Key: "token"}
-		result := storage.Where(config).Take(config)
-		if result.Error != nil || config.Value != token {
+		user := &User{Name: username}
+		result := storage.Where(user).Take(user)
+		if result.Error != nil || user.Token != token {
 			c.Redirect(http.StatusSeeOther, "/login")
 			c.Abort()
 			return
 		}
+		c.Set("user", user)
 		c.Next()
 	}
 }
@@ -43,24 +45,48 @@ func LoginPage(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	config := &storage.Config{Key: "password"}
-	result := storage.Where(config).Take(config)
+	currentUser := &User{}
 
+	// 第一个注册的用户设置为管理员
+	result := storage.Model(&User{}).Take(&currentUser)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		config.Value = sha256base64(c.PostForm("password"))
-		storage.Create(config)
-	}
-
-	if config.Value != sha256base64(c.PostForm("password")) {
-		c.Redirect(http.StatusSeeOther, "/login")
+		currentUser.Name = c.PostForm("username")
+		currentUser.Password = sha256base64(c.PostForm("password"))
+		currentUser.Token = uuid.New().String()
+		currentUser.Role = "admin"
+		storage.Save(currentUser)
+		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
+		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
-	token := uuid.New().String()
-	storage.Save(&storage.Config{Key: "token", Value: token})
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("token", token, 86400, "/", "", false, false)
-	c.Redirect(http.StatusSeeOther, "/")
+	// 后续注册的用户设置为普通用户
+	result = storage.Model(&User{}).Where("name = ?", c.PostForm("username")).Take(&currentUser)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		currentUser.Name = c.PostForm("username")
+		currentUser.Password = sha256base64(c.PostForm("password"))
+		currentUser.Token = uuid.New().String()
+		currentUser.Role = "normal"
+		storage.Save(currentUser)
+		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
+		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
+		c.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+
+	// 用户存在且密码匹配,登录成功,并更新 Token
+	if currentUser.Password == sha256base64(c.PostForm("password")) {
+		currentUser.Token = uuid.New().String()
+		storage.Save(currentUser)
+		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
+		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
+		c.Redirect(http.StatusSeeOther, "/")
+		return
+	}
+
+	// 用户名密码不匹配,重新登录
+	c.Redirect(http.StatusSeeOther, "/login")
 }
 
 func sha256base64(input string) string {

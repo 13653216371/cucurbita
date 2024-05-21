@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设备</title>
+    <title>用户</title>
     <style>
         table {
             width: 100%;
@@ -45,35 +45,17 @@
     <table>
         <thead>
             <tr>
-                <th>网络</th>
-                <th>地址</th>
-                <th>国家</th>
-                <th>地区</th>
-                <th>RX</th>
-                <th>TX</th>
-                <th>状态</th>
-                <th>状态更新时间</th>
-                <th>操作系统</th>
-                <th>版本号</th>
-                <th>主机名</th>
+                <th>用户名</th>
+                <th>角色</th>
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
-            {{range .devices}}
+            {{range .users}}
             <tr>
-                <td>{{ .Domain }}</td>
-                <td>{{ .IP }}</td>
-                <td>{{ .Country }}</td>
-                <td>{{ .Region }}</td>
-                <td>{{call $.formatRxTx .RX}}</td>
-                <td>{{call $.formatRxTx .TX}}</td>
-                <td>{{ if .Online }}在线{{ else }}离线{{ end }}</td>
-                <td>{{ .ConnUpdatedAt.Format "2006-01-02 15:04:05" }}</td>
-                <td>{{ .OS }}</td>
-                <td>{{ .Version }}</td>
-                <td>{{ .Hostname }}</td>
-                <td><button onclick="location.href='/device/delete?domain={{.Domain}}&vmac={{.VMac}}'">删除</button></td>
+                <td>{{ .Name }}</td>
+                <td>{{ .Role }}</td>
+                <td><button onclick="location.href='/user/delete?name={{.Name}}'">删除</button></td>
             </tr>
             {{end}}
         </tbody>

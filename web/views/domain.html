@@ -49,6 +49,7 @@
                 <th>网络</th>
                 <th>口令</th>
                 <th>广播</th>
+                <th>用户</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -59,6 +60,7 @@
                 <td>{{.DHCP}}</td>
                 <td>{{.Password}}</td>
                 <td>{{if .Broadcast}}允许{{else}}禁止{{end}}</td>
+                <td>{{.Username}}</td>
                 <td><button onclick="location.href='/domain/delete?name={{.Name}}'">删除</button></td>
             </tr>
             {{end}}
