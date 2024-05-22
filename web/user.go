@@ -179,7 +179,7 @@ func UserPage(c *gin.Context) {
 	if currentUser.Role == "admin" {
 		storage.Model(&User{}).Find(&users)
 	} else {
-		storage.Model(&User{}).Where("name = ?", currentUser.Name).Find(&users)
+		storage.Model(&User{}).Where("name = ?", currentUser.Name).Or("inviter = ?", currentUser.Name).Find(&users)
 	}
 
 	c.HTML(http.StatusOK, "user.html", goview.M{

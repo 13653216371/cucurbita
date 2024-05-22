@@ -32,7 +32,7 @@ func Index(c *gin.Context) {
 		storage.Model(&candy.Device{}).Where("online = true AND username = ?", currentUser.Name).Or("conn_updated_at > ? AND username = ?", time.Now().AddDate(0, 0, -7), currentUser.Name).Count(&weekly)
 		storage.Model(&candy.Device{}).Where("username = ?", currentUser.Name).Count(&all)
 		storage.Model(&candy.Domain{}).Where("username = ?", currentUser.Name).Count(&domain)
-		storage.Model(&User{}).Where("name = ?", currentUser.Name).Count(&user)
+		storage.Model(&User{}).Where("name = ?", currentUser.Name).Or("inviter = ?", currentUser.Name).Count(&user)
 	}
 
 	c.HTML(http.StatusOK, "index.html", goview.M{
