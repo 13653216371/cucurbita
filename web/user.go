@@ -192,8 +192,11 @@ func UserPage(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	currentUser := c.MustGet("user").(*User)
-	if currentUser.Role == "admin" {
-		storage.Delete(&User{Name: c.Query("name")})
+	user := &User{}
+	storage.Model(&User{}).Where("name = ?", c.Query("name")).Take(user)
+	if (currentUser.Role == "admin") != (user.Name == currentUser.Name) {
+		storage.Model(&User{}).Where("inviter = ?", user.Name).Update("inviter", user.Inviter)
+		storage.Delete(user)
 	}
 	c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
 }
