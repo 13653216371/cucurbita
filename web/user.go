@@ -11,6 +11,7 @@ import (
 	"github.com/foolin/goview"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/lanthora/cucurbita/candy"
 	"github.com/lanthora/cucurbita/logger"
 	"github.com/lanthora/cucurbita/storage"
 )
@@ -193,7 +194,23 @@ func UserPage(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	currentUser := c.MustGet("user").(*User)
 	user := &User{}
-	storage.Model(&User{}).Where("name = ?", c.Query("name")).Take(user)
+	result := storage.Model(&User{}).Where("name = ?", c.Query("name")).Take(user)
+	if result.Error != nil {
+		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		return
+	}
+	domainCount := int64(0)
+	storage.Model(&candy.Domain{}).Where("username = ?", user.Name).Limit(1).Count(&domainCount)
+	if domainCount != 0 {
+		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		return
+	}
+	devCount := int64(0)
+	storage.Model(&candy.Device{}).Where("username = ?", user.Name).Limit(1).Count(&devCount)
+	if devCount != 0 {
+		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		return
+	}
 	if (currentUser.Role == "admin") != (user.Name == currentUser.Name) {
 		storage.Model(&User{}).Where("inviter = ?", user.Name).Update("inviter", user.Inviter)
 		storage.Delete(user)
