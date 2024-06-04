@@ -36,9 +36,9 @@ func InsertDomain(c *gin.Context) {
 		Broadcast: c.PostForm("broadcast") == "enable",
 		Username:  currentUser.Name})
 	if result.Error != nil {
-		c.Redirect(http.StatusSeeOther, "/domain/insert")
+		c.Redirect(http.StatusFound, "/domain/insert")
 	} else {
-		c.Redirect(http.StatusSeeOther, "/domain")
+		c.Redirect(http.StatusFound, "/domain")
 	}
 }
 
@@ -47,5 +47,5 @@ func DeleteDomain(c *gin.Context) {
 	if currentUser.Role == "admin" || candy.GetDomain(c.Query("name")).Username == currentUser.Name {
 		candy.DeleteDomain(c.Query("name"))
 	}
-	c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+	c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 }

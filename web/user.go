@@ -54,19 +54,19 @@ func UserRegister(c *gin.Context) {
 		storage.Create(currentUser)
 		c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 		c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
-		c.Redirect(http.StatusSeeOther, "/")
+		c.Redirect(http.StatusFound, "/")
 		return
 	}
 
 	storage.Model(&User{}).Where("name = ?", username).Count(&count)
 	if count != 0 {
-		c.Redirect(http.StatusSeeOther, "/register")
+		c.Redirect(http.StatusFound, "/register")
 		return
 	}
 
 	inviter, ok := isValidInvitation(invitation)
 	if !ok {
-		c.Redirect(http.StatusSeeOther, "/register")
+		c.Redirect(http.StatusFound, "/register")
 		return
 	}
 
@@ -79,7 +79,7 @@ func UserRegister(c *gin.Context) {
 	storage.Create(currentUser)
 	c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 	c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
-	c.Redirect(http.StatusSeeOther, "/")
+	c.Redirect(http.StatusFound, "/")
 }
 
 func isValidInvitation(invitation string) (inviter string, ok bool) {
@@ -120,7 +120,7 @@ func LoginMiddleware() gin.HandlerFunc {
 		username, usernameErr := c.Cookie("username")
 		token, tokenErr := c.Cookie("token")
 		if usernameErr != nil || tokenErr != nil {
-			c.Redirect(http.StatusSeeOther, "/login")
+			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
 		}
@@ -128,7 +128,7 @@ func LoginMiddleware() gin.HandlerFunc {
 		user := &User{Name: username}
 		result := storage.Where(user).Take(user)
 		if result.Error != nil || user.Token != token {
-			c.Redirect(http.StatusSeeOther, "/login")
+			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
 		}
@@ -145,19 +145,19 @@ func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := sha256base64(c.PostForm("password"))
 	if username == "" {
-		c.Redirect(http.StatusSeeOther, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		return
 	}
 
 	currentUser := &User{}
 	result := storage.Model(&User{}).Where("name = ?", username).Take(&currentUser)
 	if result.Error != nil {
-		c.Redirect(http.StatusSeeOther, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		return
 	}
 
 	if currentUser.Password != password {
-		c.Redirect(http.StatusSeeOther, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		return
 	}
 
@@ -165,7 +165,7 @@ func Login(c *gin.Context) {
 	storage.Save(currentUser)
 	c.SetCookie("username", currentUser.Name, 86400, "/", "", false, false)
 	c.SetCookie("token", currentUser.Token, 86400, "/", "", false, false)
-	c.Redirect(http.StatusSeeOther, "/")
+	c.Redirect(http.StatusFound, "/")
 }
 
 func sha256base64(input string) string {
@@ -196,24 +196,24 @@ func DeleteUser(c *gin.Context) {
 	user := &User{}
 	result := storage.Model(&User{}).Where("name = ?", c.Query("name")).Take(user)
 	if result.Error != nil {
-		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 		return
 	}
 	domainCount := int64(0)
 	storage.Model(&candy.Domain{}).Where("username = ?", user.Name).Limit(1).Count(&domainCount)
 	if domainCount != 0 {
-		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 		return
 	}
 	devCount := int64(0)
 	storage.Model(&candy.Device{}).Where("username = ?", user.Name).Limit(1).Count(&devCount)
 	if devCount != 0 {
-		c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+		c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 		return
 	}
 	if (currentUser.Role == "admin") != (user.Name == currentUser.Name) {
 		storage.Model(&User{}).Where("inviter = ?", user.Name).Update("inviter", user.Inviter)
 		storage.Delete(user)
 	}
-	c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+	c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 }

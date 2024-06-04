@@ -80,5 +80,5 @@ func DeleteDevice(c *gin.Context) {
 		storage.Delete(&candy.Device{Domain: c.Query("domain"), VMac: c.Query("vmac"), Username: currentUser.Name})
 	}
 
-	c.Redirect(http.StatusSeeOther, c.GetHeader("Referer"))
+	c.Redirect(http.StatusFound, c.GetHeader("Referer"))
 }
