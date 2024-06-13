@@ -14,7 +14,7 @@ import (
 var db *gorm.DB
 
 func init() {
-	err := os.MkdirAll(settings.Storage, os.ModeDir)
+	err := os.MkdirAll(settings.Storage, os.ModeDir|os.ModePerm)
 	if err != nil {
 		logger.Fatal(err)
 	}
