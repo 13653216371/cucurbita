@@ -39,5 +39,7 @@ func main() {
 
 	r.GET("/logger", logger.SetLevel)
 
-	r.Run(settings.Address)
+	if err := r.Run(settings.Address); err != nil {
+		logger.Fatal(err)
+	}
 }
