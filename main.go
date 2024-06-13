@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lanthora/cucurbita/candy"
 	"github.com/lanthora/cucurbita/logger"
+	"github.com/lanthora/cucurbita/settings"
 	"github.com/lanthora/cucurbita/web"
 )
 
@@ -38,5 +39,5 @@ func main() {
 
 	r.GET("/logger", logger.SetLevel)
 
-	r.Run(":80")
+	r.Run(settings.Address)
 }

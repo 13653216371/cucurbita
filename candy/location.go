@@ -2,10 +2,12 @@ package candy
 
 import (
 	"net"
+	"path"
 
 	"github.com/ip2location/ip2location-go/v9"
 	"github.com/ipinfo/go/v2/ipinfo"
 	"github.com/ipinfo/go/v2/ipinfo/cache"
+	"github.com/lanthora/cucurbita/settings"
 	"github.com/lanthora/cucurbita/storage"
 )
 
@@ -44,7 +46,7 @@ func ip2CountryRegion(ip string) (country, region string) {
 		}
 	}
 
-	if db, err := ip2location.OpenDB("/var/lib/cucurbita/IP2LOCATION.BIN"); err == nil {
+	if db, err := ip2location.OpenDB(path.Join(settings.Storage, "IP2LOCATION.BIN")); err == nil {
 		defer db.Close()
 		if results, err := db.Get_all(ip); err == nil {
 			country = results.Country_short

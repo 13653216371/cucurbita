@@ -2,9 +2,11 @@ package storage
 
 import (
 	"os"
+	"path"
 
 	"github.com/glebarez/sqlite"
 	"github.com/lanthora/cucurbita/logger"
+	"github.com/lanthora/cucurbita/settings"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 )
@@ -12,12 +14,11 @@ import (
 var db *gorm.DB
 
 func init() {
-	path := "/var/lib/cucurbita/"
-	err := os.MkdirAll(path, os.ModeDir)
+	err := os.MkdirAll(settings.Storage, os.ModeDir)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	db, err = gorm.Open(sqlite.Open(path+"sqlite.db"), &gorm.Config{
+	db, err = gorm.Open(sqlite.Open(path.Join(settings.Storage, "sqlite.db")), &gorm.Config{
 		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
 	})
 	if err != nil {
